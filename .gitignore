@@ -36,6 +36,7 @@
 *.x86_64
 *.hex
 sbx-h6-test
+sbx-h6-ctl
 
 # Debug files
 *.dSYM/
