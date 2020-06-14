@@ -4,4 +4,6 @@ This repository tracks my attempt to reverse-engineer the USB protocol to set th
 
 The audio part of the headset works using the default ALSA USB soundcard drivers, but there is a separate USB HCI interface for the LEDs (and presumably the volume control knob, haven't gotten to that yet).
 
-At some point I'll upload packet captures and stuff like that. Right now I just wanted to track the very (VEEEERRRRYYY) basic app I wrote which allows you to set the LED color. I've also uploaded an example udev rule that sets the LEDs to purple whenever the headset is plugged in. Drop it in `/etc/udev/rules.d` if you want to try it out.
+Right now I just wanted to track the very (VEEEERRRRYYY) basic app I wrote which allows you to set the LED color. I've also uploaded an example udev rule that sets the LEDs to purple whenever the headset is plugged in. Drop it in `/etc/udev/rules.d` if you want to try it out.
+
+I've also uploaded a small packet capture to illustrate the LED setting routine from the original windows driver. I'll upload more as I test out more features.
