@@ -1,6 +1,6 @@
 #include <argp.h>
 #include <arpa/inet.h>
-#include <libusb-1.0/libusb.h>
+#include <hidapi/hidapi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -17,7 +17,7 @@ static struct argp_option options[] = {
 struct sbx_h6_settings {
 	uint32_t vendor_id;
 	uint32_t product_id;
-	libusb_device_handle *handle;
+	hid_device *handle;
 	uint32_t color;
 	uint8_t brightness;
 };
@@ -89,7 +89,7 @@ int sbx_set_color(struct sbx_h6_settings *settings)
 	int err = 0;
 	buf[0] = 0xff;	// The first byte is always ff
 	*(uint32_t*)(buf + SBX_H6_CMD_INDEX) = htonl(SBX_H6_START_CMD);
-	err = libusb_control_transfer(settings->handle, 0x21, 9, 0x02ff, 3, buf, SBX_H6_CMD_LEN, 0);
+	err = hid_write(settings->handle, buf, SBX_H6_CMD_LEN);
 	if (err < 0) {
 		printf("err %d during start transfer\n", err);
 		return err;
@@ -97,14 +97,14 @@ int sbx_set_color(struct sbx_h6_settings *settings)
 	*(uint32_t*)(buf + SBX_H6_CMD_INDEX) = htonl(SBX_H6_COLOR_CMD);
 	// The actual color goes in these 3 bytes
 	*(uint32_t*)(buf + SBX_H6_COLOR_INDEX) = sbx_rgb_to_rbg(settings->color, settings->brightness);
-	err = libusb_control_transfer(settings->handle, 0x21, 9, 0x02ff, 3, buf, SBX_H6_CMD_LEN, 0);
+	err = hid_write(settings->handle, buf, SBX_H6_CMD_LEN);
 	if (err < 0) {
 		printf("err %d during color transfer\n", err);
 		return err;
 	}
 	// Then we do this to display the color
 	*(uint64_t*)(buf + SBX_H6_CMD_INDEX) = htonl(SBX_H6_END_CMD);
-	err = libusb_control_transfer(settings->handle, 0x21, 9, 0x02ff, 3, buf, SBX_H6_CMD_LEN, 0);
+	err = hid_write(settings->handle, buf, SBX_H6_CMD_LEN);
 	if (err < 0) {
 		printf("err %d during end transfer\n", err);
 		return err;
@@ -120,35 +120,25 @@ int main(int argc, char **argv)
 	headset.brightness = 0xff;
 	argp_parse(&argp_setup, argc, argv, 0, 0, &headset);
 
-	err = libusb_init(NULL);
+	err = hid_init();
 	if (err) {
-		printf("libusb init error %s", libusb_strerror(err));
+		printf("hid init error %d\n", err);
 		return err;
 	}
-	headset.handle = libusb_open_device_with_vid_pid(NULL, headset.vendor_id, headset.product_id);
+	headset.handle = hid_open(headset.vendor_id, headset.product_id, NULL);
 	if (!headset.handle) {
 		printf("Error opening USB device %04x:%04x\n", headset.vendor_id, headset.product_id);
-		libusb_exit(NULL);
+		hid_exit();
 		return 1;
-	}
-	err = libusb_set_auto_detach_kernel_driver(headset.handle, 1);
-	if (!err) {
-		err = libusb_claim_interface(headset.handle, 3);
-	}
-	if (err) {
-		printf("libusb iface error %s", libusb_strerror(err));
-		libusb_close(headset.handle);
-		libusb_exit(NULL);
-		return err;
 	}
 	if (headset.color) {
 		printf("set color to %x\n", headset.color);
 		err = sbx_set_color(&headset);
 	}
-	libusb_close(headset.handle);
-	libusb_exit(NULL);
 	if (err) {
-		printf("failed with %s\n", libusb_strerror(err));
+		printf("failed with %s\n", hid_error(headset.handle));
 	}
+	hid_close(headset.handle);
+	hid_exit();
 	return err;
 }
