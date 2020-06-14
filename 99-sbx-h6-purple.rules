@@ -1,0 +1,1 @@
+ACTION=="add", ATTR{idVendor}=="041e", ATTR{idProduct}=="3255", RUN+="/path/to/sbx-h6-ctl -c c010ff 041e:3255"
