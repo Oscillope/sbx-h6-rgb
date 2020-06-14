@@ -135,9 +135,6 @@ int main(int argc, char **argv)
 		printf("set color to %x\n", headset.color);
 		err = sbx_set_color(&headset);
 	}
-	if (err) {
-		printf("failed with %s\n", hid_error(headset.handle));
-	}
 	hid_close(headset.handle);
 	hid_exit();
 	return err;
