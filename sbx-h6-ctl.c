@@ -109,11 +109,24 @@ int main(int argc, char **argv)
 		libusb_exit(NULL);
 		return 1;
 	}
+	err = libusb_set_auto_detach_kernel_driver(headset.handle, 1);
+	if (!err) {
+		err = libusb_claim_interface(headset.handle, 3);
+	}
+	if (err) {
+		printf("libusb iface error %s", libusb_strerror(err));
+		libusb_close(headset.handle);
+		libusb_exit(NULL);
+		return err;
+	}
 	if (headset.color) {
 		printf("set color to %x\n", headset.color);
 		err = sbx_set_color(&headset);
 	}
 	libusb_close(headset.handle);
 	libusb_exit(NULL);
+	if (err) {
+		printf("failed with %s\n", libusb_strerror(err));
+	}
 	return err;
 }
