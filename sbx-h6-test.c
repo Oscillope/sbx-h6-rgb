@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 	if (!handle) {
 		err = 1;
 		sprintf(errfn, "open");
-		goto out;
+		goto out_open;
 	}
 	err = libusb_set_auto_detach_kernel_driver(handle, 1);
 	if (err) {
@@ -26,6 +26,7 @@ int main(int argc, char** argv)
 		sprintf(errfn, "claim");
 		goto out;
 	}
+	// It seems like this string precedes every color write
 	unsigned char buf[] = {0xff, 0x03, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 	err = libusb_control_transfer(handle, 0x21, 9, 0x02ff, 3, buf, 16, 0);
 	if (err < 0) {
@@ -34,6 +35,7 @@ int main(int argc, char** argv)
 	}
 	buf[1] = 0x04;
 	buf[3] = 0x00;
+	// The actual color goes in these 3 bytes
 	buf[4] = 0xc0;
 	buf[5] = 0xff;
 	buf[6] = 0x10;
@@ -42,6 +44,7 @@ int main(int argc, char** argv)
 		sprintf(errfn, "xfer2");
 		goto out;
 	}
+	// Then we do this to display the color
 	buf[1] = 0x01;
 	buf[4] = 0x00;
 	buf[5] = 0x00;
@@ -51,13 +54,13 @@ int main(int argc, char** argv)
 		sprintf(errfn, "xfer2");
 		goto out;
 	}
-	libusb_close(handle);
 out:
+	libusb_close(handle);
+out_open:
 	libusb_exit(NULL);
 	if (err < 0) {
 		printf("%s: %s\n", errfn, libusb_strerror(err));
-	} else {
-		err = 0;
+		return err;
 	}
-	return err;
+	return 0;
 }
