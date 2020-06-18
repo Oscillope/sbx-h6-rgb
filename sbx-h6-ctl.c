@@ -84,10 +84,10 @@ uint32_t sbx_rgb_to_rbg(uint32_t color, uint8_t brightness)
 #define SBX_H6_CMD_LEN		16
 int sbx_set_color(struct sbx_h6_settings *settings)
 {
-	// It seems like this string precedes every color write
 	unsigned char buf[SBX_H6_CMD_LEN] = { 0 };
 	int err = 0;
 	buf[0] = 0xff;	// The first byte is always ff
+	// It seems like this string precedes every color write
 	*(uint32_t*)(buf + SBX_H6_CMD_INDEX) = htonl(SBX_H6_START_CMD);
 	err = hid_write(settings->handle, buf, SBX_H6_CMD_LEN);
 	if (err < 0) {
