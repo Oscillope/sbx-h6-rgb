@@ -1,5 +1,5 @@
 [Unit]
-Description=TurnSoundBlasterX-H6 LED ON at startup and OFF at Shutdown Service
+Description=Turn SoundBlasterX-H6 LED ON at startup and OFF at Shutdown Service
 
 [Service]
 Type=oneshot
